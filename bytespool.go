@@ -39,10 +39,17 @@ func New(minSize, maxSize, factor int) *SyncPool {
 }
 
 // Make get a bytes slice from pool or make a new one with len = size
-func (pool *SyncPool) Make(length, capacity int) []int64 {
-	if length > capacity {
-		panic("make: length out of range")
+func (pool *SyncPool) Make(lencap ...int) []int64 {
+	var length, capacity int
+	switch len(lencap) {
+	case 1:
+		length, capacity = lencap[0], lencap[0]
+	case 2:
+		length, capacity = lencap[0], lencap[1]
+	default:
+		panic("make: invalid len cap")
 	}
+
 	if capacity <= pool.maxSize {
 		for i := 0; i < len(pool.classesSize); i++ {
 			if pool.classesSize[i] >= capacity {

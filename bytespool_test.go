@@ -15,16 +15,4 @@ func TestAlloc(t *testing.T) {
 	for _, b := range bts {
 		fmt.Print(b)
 	}
-	fmt.Println()
-	m := make([]byte, 5, 34)
-	fmt.Println(len(m), cap(m))
-	for _, b := range m {
-		fmt.Print(b)
-	}
-	fmt.Println()
-
-	m = m[:32]
-	for _, b := range m {
-		fmt.Print(b)
-	}
 }
