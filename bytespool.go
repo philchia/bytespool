@@ -1,6 +1,8 @@
 package bytespool
 
-import "sync"
+import (
+	"sync"
+)
 
 // SyncPool is a sync.Pool base slab allocation memory pool
 type SyncPool struct {
@@ -36,17 +38,20 @@ func New(minSize, maxSize, factor int) *SyncPool {
 	return pool
 }
 
-// Alloc get a bytes slice from pool or make a new one with len = size
-func (pool *SyncPool) Alloc(size int) []int64 {
-	if size <= pool.maxSize {
+// Make get a bytes slice from pool or make a new one with len = size
+func (pool *SyncPool) Make(length, capacity int) []int64 {
+	if length > capacity {
+		panic("make: length out of range")
+	}
+	if capacity <= pool.maxSize {
 		for i := 0; i < len(pool.classesSize); i++ {
-			if pool.classesSize[i] >= size {
+			if pool.classesSize[i] >= capacity {
 				mem := pool.classes[i].Get().(*[]int64)
-				return (*mem)[:size]
+				return (*mem)[:length]
 			}
 		}
 	}
-	return make([]int64, 0, size)
+	return make([]int64, length, capacity)
 }
 
 // Free put bytes slice into pool or do nothing
