@@ -29,7 +29,7 @@ func New(minSize, maxSize, factor int) *SyncPool {
 		pool.classesSize[n] = chunkSize
 		pool.classes[n].New = func(size int) func() interface{} {
 			return func() interface{} {
-				buf := make([]int64, size)
+				buf := make([]byte, size)
 				return &buf
 			}
 		}(chunkSize)
@@ -39,33 +39,23 @@ func New(minSize, maxSize, factor int) *SyncPool {
 }
 
 // Make get a bytes slice from pool or make a new one with len = size
-func (pool *SyncPool) Make(lencap ...int) []int64 {
-	var length, capacity int
-	switch len(lencap) {
-	case 1:
-		length, capacity = lencap[0], lencap[0]
-	case 2:
-		length, capacity = lencap[0], lencap[1]
-	default:
-		panic("make: invalid len cap")
-	}
-
+func (pool *SyncPool) Make(length, capacity int) []byte {
 	if capacity <= pool.maxSize {
 		for i := 0; i < len(pool.classesSize); i++ {
 			if pool.classesSize[i] >= capacity {
-				mem := pool.classes[i].Get().(*[]int64)
+				mem := pool.classes[i].Get().(*[]byte)
 				return (*mem)[:length]
 			}
 		}
 	}
-	return make([]int64, length, capacity)
+	return make([]byte, length, capacity)
 }
 
 // Free put bytes slice into pool or do nothing
-func (pool *SyncPool) Free(mem []int64) {
+func (pool *SyncPool) Free(mem []byte) {
 	if size := cap(mem); size <= pool.maxSize {
 		for i := 0; i < len(pool.classesSize); i++ {
-			if pool.classesSize[i] >= size {
+			if pool.classesSize[i] == size {
 				pool.classes[i].Put(&mem)
 				return
 			}
